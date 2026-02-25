@@ -44,22 +44,39 @@ export default function AdminPage({ allRatings }) {
 
     // Calculate stats for 'Jami Ko'rsatkichlar' (Overview/Totals)
     const getTotalsStats = () => {
+        const monthIndex = months.indexOf(selectedMonth); // 0-indexed
+
         let stats = allTeachers.map(teacher => {
-            let totalScore = 0;
-            let votes = 0;
+            let monthlyScore = 0;
+            let monthlyVotes = 0;
+            let yearlyScore = 0;
+            let yearlyVotes = 0;
 
             allRatings.forEach(sub => {
-                if (sub.ratings[teacher] !== undefined) {
-                    totalScore += sub.ratings[teacher];
-                    votes++;
+                if (sub.ratings[teacher] !== undefined && sub.createdAt) {
+                    const date = new Date(sub.createdAt);
+                    const subMonth = date.getMonth(); // 0-indexed
+                    const subYear = date.getFullYear();
+
+                    // Yearly total (all months in the selected year)
+                    if (subYear === selectedYear) {
+                        yearlyScore += sub.ratings[teacher];
+                        yearlyVotes++;
+
+                        // Monthly average (only the selected month)
+                        if (subMonth === monthIndex) {
+                            monthlyScore += sub.ratings[teacher];
+                            monthlyVotes++;
+                        }
+                    }
                 }
             });
 
             return {
                 name: teacher,
-                monthlyAverage: votes > 0 ? (totalScore / votes).toFixed(1) : '-',
-                votes: votes,
-                yearlyTotal: totalScore > 0 ? totalScore.toFixed(1) : '-'
+                monthlyAverage: monthlyVotes > 0 ? (monthlyScore / monthlyVotes).toFixed(1) : '-',
+                votes: monthlyVotes,
+                yearlyTotal: yearlyScore > 0 ? yearlyScore.toFixed(1) : '-'
             };
         });
 
@@ -68,6 +85,7 @@ export default function AdminPage({ allRatings }) {
         }
 
         return stats;
+
     };
 
     // Filter submissions for a specific class

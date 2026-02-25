@@ -54,7 +54,8 @@ function App() {
           studentName: r.student_name,
           ratings: r.ratings,
           comments: r.comments,
-          id: r.id
+          id: r.id,
+          createdAt: r.created_at
         }));
 
         setAllRatings(formattedRatings);
