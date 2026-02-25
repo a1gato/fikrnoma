@@ -10,11 +10,17 @@ export default function AdminPage({ allRatings }) {
 
     // Totals Page States
     const [selectedMonth, setSelectedMonth] = useState('Fevral');
+    const [selectedTeacher, setSelectedTeacher] = useState(null);
     const [isMonthOpen, setIsMonthOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedYear, setSelectedYear] = useState(2026);
     const monthDropdownRef = useRef(null);
     const months = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'];
+
+    // Reset selected teacher when view changes
+    useEffect(() => {
+        setSelectedTeacher(null);
+    }, [activeView]);
 
     // Close month dropdown when clicking outside
     useEffect(() => {
@@ -378,11 +384,31 @@ export default function AdminPage({ allRatings }) {
                                 </thead>
                                 <tbody>
                                     {getClassStats(activeView).length > 0 ? getClassStats(activeView).map((stat, index) => (
-                                        <tr key={index} style={{ borderBottom: index < getClassStats(activeView).length - 1 ? '1px solid #f1f5f9' : 'none', background: 'white', transition: 'background-color 0.2s', cursor: 'default' }} onMouseOver={e => e.currentTarget.style.backgroundColor = '#f8fafc'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'white'}>
+                                        <tr
+                                            key={index}
+                                            style={{
+                                                borderBottom: index < getClassStats(activeView).length - 1 ? '1px solid #f1f5f9' : 'none',
+                                                background: selectedTeacher === stat.name ? 'var(--primary-light)' : 'white',
+                                                transition: 'background-color 0.2s',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => setSelectedTeacher(selectedTeacher === stat.name ? null : stat.name)}
+                                            onMouseOver={e => { if (selectedTeacher !== stat.name) e.currentTarget.style.backgroundColor = '#f8fafc' }}
+                                            onMouseOut={e => { if (selectedTeacher !== stat.name) e.currentTarget.style.backgroundColor = 'white' }}
+                                        >
                                             <td style={{ padding: '1.25rem 1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{index + 1}</td>
                                             <td style={{ padding: '1.25rem 1.5rem' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <div style={{
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        borderRadius: '50%',
+                                                        background: selectedTeacher === stat.name ? 'var(--primary)' : 'var(--primary-light)',
+                                                        color: selectedTeacher === stat.name ? 'white' : 'var(--primary)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
                                                         <UserCircle size={18} />
                                                     </div>
                                                     <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '0.95rem' }}>{stat.name}</span>
@@ -410,6 +436,66 @@ export default function AdminPage({ allRatings }) {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Comments Section */}
+                        {selectedTeacher && (
+                            <div style={{ marginTop: '2.5rem', animation: 'slideUp 0.3s ease-out' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <MessageSquare size={24} color="var(--primary)" />
+                                        <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a' }}>
+                                            {selectedTeacher} uchun fikrlar
+                                        </h3>
+                                    </div>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '500' }}>
+                                        Jami: {allRatings.filter(r => r.className === activeView && r.comments[selectedTeacher]).length} ta fikr
+                                    </span>
+                                </div>
+
+                                <div style={{ display: 'grid', gap: '1rem' }}>
+                                    {allRatings
+                                        .filter(r => r.className === activeView && r.comments[selectedTeacher])
+                                        .map((r, i) => (
+                                            <div key={i} style={{
+                                                background: 'white',
+                                                padding: '1.5rem',
+                                                borderRadius: '16px',
+                                                border: '1px solid #e2e8f0',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                                            }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                                                    <span style={{ fontWeight: '700', color: '#334155', fontSize: '0.9rem' }}>
+                                                        {r.studentName || 'Anonim o\'quvchi'}
+                                                    </span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                        <Star size={14} color="#f59e0b" fill="#f59e0b" />
+                                                        <span style={{ fontWeight: '700', color: '#b45309', fontSize: '0.85rem' }}>
+                                                            {r.ratings[selectedTeacher]} ball
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <p style={{ margin: 0, color: '#475569', lineHeight: '1.6', fontSize: '0.95rem', fontStyle: 'italic' }}>
+                                                    "{r.comments[selectedTeacher]}"
+                                                </p>
+                                            </div>
+                                        ))
+                                    }
+                                    {allRatings.filter(r => r.className === activeView && r.comments[selectedTeacher]).length === 0 && (
+                                        <div style={{ padding: '3rem', textAlign: 'center', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                                            <p style={{ margin: 0, color: 'var(--text-muted)', fontWeight: '500' }}>
+                                                Hozircha ushbu o'qituvchi uchun fikrlar bildirilmagan.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                        <style>{`
+                            @keyframes slideUp {
+                                from { opacity: 0; transform: translateY(20px); }
+                                to { opacity: 1; transform: translateY(0); }
+                            }
+                        `}</style>
                     </div>
                 )}
             </div>
