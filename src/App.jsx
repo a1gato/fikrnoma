@@ -124,6 +124,27 @@ function App() {
     }
   };
 
+  // Handle missing Supabase configuration
+  if (!supabase) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'Inter, sans-serif', padding: '2rem' }}>
+        <div style={{ textAlign: 'center', maxWidth: '500px', background: 'white', padding: '3rem', borderRadius: '24px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+          <div style={{ width: '64px', height: '64px', background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto', color: '#ef4444' }}>
+            <Database size={32} />
+          </div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0f172a', marginBottom: '1rem' }}>Konfiguratsiya xatosi</h1>
+          <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '2rem' }}>
+            Supabase ulanishi uchun zarur bo'lgan muhit o'zgaruvchilari (VITE_SUPABASE_URL va VITE_SUPABASE_ANON_KEY) topilmadi.
+            Iltimos, Vercel sozlamalarida ushbu o'zgaruvchilarni qo'shing.
+          </p>
+          <div style={{ background: '#f1f5f9', padding: '1rem', borderRadius: '12px', textAlign: 'left', fontSize: '0.85rem', color: '#475569' }}>
+            <strong>Yechim:</strong> Vercel Dashboard &rarr; Settings &rarr; Environment Variables bo'limiga o'ting va .env faylidagi ma'lumotlarni kiriting.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ textAlign: 'center' }}>
