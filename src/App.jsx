@@ -10,6 +10,7 @@ function App() {
   const [allRatings, setAllRatings] = useState([]);
   const [classesData, setClassesData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState('uz');
 
   // Fetch data from Supabase on mount
   useEffect(() => {
@@ -161,11 +162,11 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={<IndexPage classesData={classesData} />}
+          element={<IndexPage classesData={classesData} lang={lang} setLang={setLang} />}
         />
         <Route
           path="/:classId"
-          element={<StudentPage onSaveRating={handleSaveRating} classesData={classesData} />}
+          element={<StudentPage onSaveRating={handleSaveRating} classesData={classesData} lang={lang} setLang={setLang} />}
         />
         <Route
           path="/admin"

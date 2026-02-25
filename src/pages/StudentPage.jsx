@@ -1,28 +1,61 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Star, CheckCircle, User, MessageSquare } from 'lucide-react';
+import { Star, CheckCircle, User, MessageSquare, Globe } from 'lucide-react';
 import { classesData } from '../data/teachersData';
+import translations from '../data/translations';
 
-export default function StudentPage({ onSaveRating }) {
+export default function StudentPage({ onSaveRating, lang = 'uz', setLang }) {
     const { classId } = useParams();
     const [studentName, setStudentName] = useState('');
     const [ratings, setRatings] = useState({}); // { "teacherName": 5, ... }
     const [comments, setComments] = useState({}); // { "teacherName": "Great teacher...", ... }
     const [submitted, setSubmitted] = useState(false);
     const navigate = useNavigate();
+    const t = translations[lang];
 
     // Get teachers for the selected class from URL
     const currentClassData = classesData.find(c => c.id === classId);
     const teachers = currentClassData ? currentClassData.teachers : [];
 
+    // Language Switcher Component
+    const LanguageSwitcher = () => (
+        <div style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 1000 }}>
+            <div style={{ display: 'flex', background: 'white', border: '1px solid #e2e8f0', borderRadius: '50px', padding: '0.25rem', gap: '0.25rem', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                <div style={{ padding: '0.5rem', color: 'var(--primary)' }}><Globe size={20} /></div>
+                {['uz', 'ru', 'en'].map(l => (
+                    <button
+                        key={l}
+                        onClick={() => setLang(l)}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            background: lang === l ? 'var(--primary)' : 'transparent',
+                            color: lang === l ? 'white' : 'var(--text-muted)',
+                            border: 'none',
+                            borderRadius: '50px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            outline: 'none',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        {l.toUpperCase()}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+
     // If an invalid class ID is entered in the URL
     if (!currentClassData && !submitted) {
         return (
-            <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                <h1 style={{ color: 'var(--text-main)' }}>Xato: Sinf topilmadi</h1>
-                <p className="subtitle">Bunday sinf mavjud emas. Iltimos, ro'yxatdan tanlang.</p>
-                <Link to="/" className="btn" style={{ textDecoration: 'none' }}>Asosiy sahifaga qaytish</Link>
-            </div>
+            <>
+                <LanguageSwitcher />
+                <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                    <h1 style={{ color: 'var(--text-main)' }}>{t.errorTitle}</h1>
+                    <p className="subtitle">{t.errorDesc}</p>
+                    <Link to="/" className="btn" style={{ textDecoration: 'none' }}>{t.backToMain}</Link>
+                </div>
+            </>
         );
     }
 
@@ -72,35 +105,40 @@ export default function StudentPage({ onSaveRating }) {
 
     if (submitted) {
         return (
-            <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                <CheckCircle size={64} color="#10b981" style={{ margin: '0 auto 1.5rem auto' }} />
-                <h1>Rahmat!</h1>
-                <p className="subtitle">Sizning javobingiz qabul qilindi.</p>
-                <button className="btn" onClick={() => window.location.reload()}>Yana bitta yuborish</button>
-            </div>
+            <>
+                <LanguageSwitcher />
+                <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                    <CheckCircle size={64} color="#10b981" style={{ margin: '0 auto 1.5rem auto' }} />
+                    <h1>{t.thanks}</h1>
+                    <p className="subtitle">{t.thanksDesc}</p>
+                    <button className="btn" onClick={() => window.location.reload()}>{t.sendAnother}</button>
+                </div>
+            </>
         );
     }
 
     return (
         <>
+            <LanguageSwitcher />
+
             <div className="header-top">
-                <div className="badge">SCHOOL FEEDBACK SYSTEM</div>
+                <div className="badge">{t.badge}</div>
             </div>
 
-            <h1>{currentClassData.name} Sinfiga xush kelibsiz</h1>
+            <h1>{currentClassData.name} {t.welcome}</h1>
             <p className="subtitle">
-                O'qituvchilar haqida o'z fikringizni bildiring. Javoblar maxfiy qoladi.
+                {t.studentDesc}
             </p>
 
             <form onSubmit={handleSubmit}>
                 <div className="card" style={{ animation: 'fadeIn 0.3s ease-out' }}>
                     <div className="step-title">
-                        <span className="step-number">1</span> ISM FAMILYANGIZNI YOZING
+                        <span className="step-number">1</span> {t.step1}
                     </div>
                     <div className="input-group">
                         <input
                             type="text"
-                            placeholder="Ismingiz va familyangiz..."
+                            placeholder={t.namePlaceholder}
                             value={studentName}
                             onChange={(e) => setStudentName(e.target.value)}
                             required
@@ -112,7 +150,7 @@ export default function StudentPage({ onSaveRating }) {
                 {studentName.trim() && teachers.length > 0 && (
                     <div className="card" style={{ animation: 'fadeIn 0.3s ease-out' }}>
                         <div className="step-title">
-                            <span className="step-number">2</span> O'QITUVCHILARNI BAHOLANG
+                            <span className="step-number">2</span> {t.step2}
                         </div>
 
                         <div className="teachers-list">
@@ -164,7 +202,7 @@ export default function StudentPage({ onSaveRating }) {
                                     {/* Required Comment Section below the rating */}
                                     <div style={{ width: '100%' }}>
                                         <textarea
-                                            placeholder="Bu o'qituvchi haqida fikringiz..."
+                                            placeholder={t.commentPlaceholder}
                                             required
                                             value={comments[teacher] || ''}
                                             onChange={(e) => handleCommentChange(teacher, e.target.value)}
@@ -205,7 +243,7 @@ export default function StudentPage({ onSaveRating }) {
                         className="btn"
                         disabled={!isFormValid()}
                     >
-                        YUBORISH
+                        {t.submit}
                     </button>
                 )}
             </form>

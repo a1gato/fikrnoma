@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Star, BarChart3, Database, MessageSquare, LayoutGrid, BookOpen, UserCircle, Globe, ChevronLeft, ChevronRight, Calendar, Search, FileText } from 'lucide-react';
+import { ArrowLeft, Users, Star, BarChart3, Database, MessageSquare, LayoutGrid, BookOpen, UserCircle, ChevronLeft, ChevronRight, Calendar, Search, FileText } from 'lucide-react';
 import { classesData } from '../data/teachersData';
 
 export default function AdminPage({ allRatings }) {
@@ -224,16 +224,6 @@ export default function AdminPage({ allRatings }) {
 
             {/* Main Content Area */}
             <div style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', backgroundColor: '#f8fafc' }}>
-
-                {/* Header (Lang selection mockup) */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
-                    <div style={{ display: 'flex', background: 'white', border: '1px solid #e2e8f0', borderRadius: '50px', padding: '0.25rem', gap: '0.25rem' }}>
-                        <div style={{ padding: '0.5rem', color: 'var(--primary)' }}><Globe size={20} /></div>
-                        <button style={{ padding: '0.5rem 1rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50px', fontWeight: '600', cursor: 'pointer', outline: 'none' }}>UZ</button>
-                        <button style={{ padding: '0.5rem 1rem', background: 'transparent', color: 'var(--text-muted)', border: 'none', borderRadius: '50px', fontWeight: '600', cursor: 'pointer', outline: 'none' }}>RU</button>
-                        <button style={{ padding: '0.5rem 1rem', background: 'transparent', color: 'var(--text-muted)', border: 'none', borderRadius: '50px', fontWeight: '600', cursor: 'pointer', outline: 'none' }}>EN</button>
-                    </div>
-                </div>
 
                 {/* Content Views */}
                 {activeView === 'overview' ? (
