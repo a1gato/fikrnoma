@@ -97,27 +97,40 @@ function App() {
     }
   };
 
-  // Function to add a teacher to specific classes
-  const handleAddTeacher = async (teacherName, selectedClassIds) => {
+  // Function to precisely assign and remove a teacher from classes
+  const handleUpdateTeacherClasses = async (teacherName, selectedClassIds) => {
     try {
+      // Create new updated classes array
       const updatedClasses = classesData.map(c => {
-        if (selectedClassIds.includes(c.id)) {
-          if (!c.teachers.includes(teacherName)) {
-            return { ...c, teachers: [...c.teachers, teacherName] };
-          }
+        const shouldBeInClass = selectedClassIds.includes(c.id);
+        const isCurrentlyInClass = c.teachers.includes(teacherName);
+        
+        let newTeachersList = [...c.teachers];
+        
+        if (shouldBeInClass && !isCurrentlyInClass) {
+          newTeachersList.push(teacherName);
+        } else if (!shouldBeInClass && isCurrentlyInClass) {
+          newTeachersList = newTeachersList.filter(t => t !== teacherName);
         }
-        return c;
+        
+        return { ...c, teachers: newTeachersList };
       });
 
-      // Update in DB (Batch update)
-      for (const classId of selectedClassIds) {
-        const classToUpdate = updatedClasses.find(c => c.id === classId);
-        const { error } = await supabase
-          .from('classes')
-          .update({ teachers: classToUpdate.teachers })
-          .eq('id', classId);
+      // Update in DB (Batch update only for classes that changed)
+      for (const c of classesData) {
+        const originalTeachers = c.teachers;
+        const newTeachers = updatedClasses.find(uc => uc.id === c.id).teachers;
+        
+        const hasChanged = originalTeachers.length !== newTeachers.length || !originalTeachers.every(t => newTeachers.includes(t));
+        
+        if (hasChanged) {
+          const { error } = await supabase
+            .from('classes')
+            .update({ teachers: newTeachers })
+            .eq('id', c.id);
 
-        if (error) throw error;
+          if (error) throw error;
+        }
       }
 
       setClassesData(updatedClasses);
@@ -170,11 +183,15 @@ function App() {
         />
         <Route
           path="/admin"
-          element={<AdminPage allRatings={allRatings} classesData={classesData} onAddTeacher={handleAddTeacher} />}
+          element={<AdminPage allRatings={allRatings} classesData={classesData} onUpdateTeacherClasses={handleUpdateTeacherClasses} />}
+        />
+        <Route
+          path="/admin/teachers"
+          element={<AdminPage allRatings={allRatings} classesData={classesData} onUpdateTeacherClasses={handleUpdateTeacherClasses} />}
         />
         <Route
           path="/admin/class/:classId"
-          element={<AdminPage allRatings={allRatings} classesData={classesData} onAddTeacher={handleAddTeacher} />}
+          element={<AdminPage allRatings={allRatings} classesData={classesData} onUpdateTeacherClasses={handleUpdateTeacherClasses} />}
         />
       </Routes>
     </Router>

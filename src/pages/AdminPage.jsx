@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Star, BarChart3, Database, MessageSquare, LayoutGrid, BookOpen, UserCircle, ChevronLeft, ChevronRight, Calendar, Search, FileText, Download } from 'lucide-react';
-import { classesData } from '../data/teachersData';
+import { Users, Star, Database, MessageSquare, LayoutGrid, BookOpen, UserCircle, ChevronLeft, ChevronRight, Calendar, Search, FileText, Download, UserPlus, CheckCircle2, Circle } from 'lucide-react';
 
-export default function AdminPage({ allRatings }) {
+export default function AdminPage({ allRatings, classesData = [], onUpdateTeacherClasses }) {
     const navigate = useNavigate();
     const { classId } = useParams();
     const activeView = classId || 'overview'; // 'overview' is default
@@ -14,6 +13,8 @@ export default function AdminPage({ allRatings }) {
     const [isMonthOpen, setIsMonthOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedYear, setSelectedYear] = useState(2026);
+    const [newTeacherName, setNewTeacherName] = useState('');
+    const [unassignedTeachers, setUnassignedTeachers] = useState([]);
     const monthDropdownRef = useRef(null);
     const months = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'];
 
@@ -39,6 +40,10 @@ export default function AdminPage({ allRatings }) {
         c.teachers.forEach(t => {
             allTeachersObj[t] = true;
         });
+    });
+    // Include any new unassigned teachers 
+    unassignedTeachers.forEach(t => {
+        allTeachersObj[t] = true;
     });
     const allTeachers = Object.keys(allTeachersObj).sort();
 
@@ -187,6 +192,22 @@ export default function AdminPage({ allRatings }) {
                     </div>
 
                     <div>
+                        <button
+                            onClick={() => navigate('/admin/teachers')}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', padding: '0.875rem 1.25rem',
+                                border: 'none', background: activeView === 'teachers' ? 'var(--primary)' : 'transparent',
+                                color: activeView === 'teachers' ? 'white' : 'var(--text-main)',
+                                borderRadius: '12px', cursor: 'pointer', fontWeight: activeView === 'teachers' ? '600' : '500',
+                                textAlign: 'left', transition: 'all 0.2s', outline: 'none',
+                                boxShadow: activeView === 'teachers' ? '0 4px 12px rgba(124, 77, 255, 0.3)' : 'none'
+                            }}
+                        >
+                            <Users size={18} /> O'qituvchilar
+                        </button>
+                    </div>
+
+                    <div style={{ marginTop: '2rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', paddingLeft: '1rem', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '600', letterSpacing: '0.1em' }}>
                             <BookOpen size={14} /> SINFLAR
                         </div>
@@ -254,7 +275,84 @@ export default function AdminPage({ allRatings }) {
             <div style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', backgroundColor: '#f8fafc' }}>
 
                 {/* Content Views */}
-                {activeView === 'overview' ? (
+                {activeView === 'teachers' ? (
+                    <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '1200px', margin: '0 auto' }}>
+                        <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <Users size={36} color="var(--primary)" />
+                                    <h1 style={{ margin: 0, textAlign: 'left', fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>O'qituvchilar</h1>
+                                </div>
+                                <p style={{ color: 'var(--text-muted)', fontWeight: '600', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '0.5rem', fontSize: '0.875rem' }}>BAZA VA SINFLARGA BIRIKTIRISH</p>
+                            </div>
+                            
+                            {/* Add Teacher Form */}
+                            <div style={{ background: 'white', padding: '1rem', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)' }}>
+                                <input 
+                                    type="text" 
+                                    placeholder="Yangi o'qituvchi ism-sharifi..." 
+                                    value={newTeacherName}
+                                    onChange={(e) => setNewTeacherName(e.target.value)}
+                                    style={{ padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', width: '250px' }}
+                                />
+                                <button
+                                    onClick={() => {
+                                        if (newTeacherName.trim() && !allTeachers.includes(newTeacherName.trim())) {
+                                            setUnassignedTeachers(prev => [...prev, newTeacherName.trim()]);
+                                            setNewTeacherName('');
+                                        }
+                                    }}
+                                    style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.75rem 1.25rem', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                >
+                                    <UserPlus size={18} /> Qo'shish
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Teachers Grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                            {allTeachers.map((teacher, idx) => (
+                                <div key={idx} style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
+                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <UserCircle size={24} />
+                                        </div>
+                                        <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>{teacher}</h3>
+                                    </div>
+                                    
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600', letterSpacing: '0.05em' }}>SINFLAR</p>
+                                        {classesData.map(c => {
+                                            const isAssigned = c.teachers.includes(teacher);
+                                            return (
+                                                <div 
+                                                    key={c.id} 
+                                                    onClick={() => {
+                                                        const baseClassIds = classesData.filter(cd => cd.teachers.includes(teacher)).map(cd => cd.id);
+                                                        const newClassIds = isAssigned 
+                                                            ? baseClassIds.filter(id => id !== c.id) 
+                                                            : [...baseClassIds, c.id];
+                                                        onUpdateTeacherClasses(teacher, newClassIds);
+                                                    }}
+                                                    style={{ 
+                                                        display: 'flex', alignItems: 'center', gap: '0.75rem', 
+                                                        padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer',
+                                                        background: isAssigned ? 'var(--primary-light)' : '#f8fafc',
+                                                        border: isAssigned ? '1px solid var(--primary)' : '1px solid #e2e8f0',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                >
+                                                    {isAssigned ? <CheckCircle2 size={18} color="var(--primary)" /> : <Circle size={18} color="#cbd5e1" />}
+                                                    <span style={{ fontWeight: isAssigned ? '600' : '500', color: isAssigned ? 'var(--primary)' : '#475569', fontSize: '0.95rem' }}>{c.name}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : activeView === 'overview' ? (
                     <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '1200px', margin: '0 auto' }}>
                         {/* Totals Header & Filters */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1.5rem' }}>
@@ -516,9 +614,15 @@ export default function AdminPage({ allRatings }) {
                                                 boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
                                             }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                                                    <span style={{ fontWeight: '700', color: '#334155', fontSize: '0.9rem' }}>
-                                                        {r.studentName || 'Anonim o\'quvchi'}
-                                                    </span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                        <span style={{ fontWeight: '700', color: '#334155', fontSize: '0.9rem' }}>
+                                                            {r.studentName || 'Anonim o\'quvchi'}
+                                                        </span>
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '500' }}>
+                                                            {r.createdAt ? new Date(r.createdAt).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 
+                                                            (r.date ? new Date(r.date).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '')}
+                                                        </span>
+                                                    </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                                         <Star size={14} color="#f59e0b" fill="#f59e0b" />
                                                         <span style={{ fontWeight: '700', color: '#b45309', fontSize: '0.85rem' }}>
