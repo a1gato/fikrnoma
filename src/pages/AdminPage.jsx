@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Star, BarChart3, Database, MessageSquare, LayoutGrid, BookOpen, UserCircle, ChevronLeft, ChevronRight, Calendar, Search, FileText } from 'lucide-react';
+import { ArrowLeft, Users, Star, BarChart3, Database, MessageSquare, LayoutGrid, BookOpen, UserCircle, ChevronLeft, ChevronRight, Calendar, Search, FileText, Download } from 'lucide-react';
 import { classesData } from '../data/teachersData';
 
 export default function AdminPage({ allRatings }) {
@@ -113,6 +113,34 @@ export default function AdminPage({ allRatings }) {
         });
 
         return teacherStats;
+    };
+
+    // Export to Excel
+    const handleExportExcel = () => {
+        import('xlsx').then(XLSX => {
+            const stats = getTotalsStats();
+            const excelData = stats.map((stat, index) => ({
+                '#': index + 1,
+                "O'QITUVCHI ISMI, SHARIFI": stat.name,
+                [`${selectedMonth.toUpperCase()} BALL`]: stat.monthlyAverage,
+                'OVOZLAR SONI': stat.votes,
+                'YILLIK JAMI': stat.yearlyTotal
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Jami Ko'rsatkichlar");
+            
+            worksheet['!cols'] = [
+                { wch: 5 },
+                { wch: 40 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 15 }
+            ];
+
+            XLSX.writeFile(workbook, `Jami_Korsatkichlar_${selectedMonth}_${selectedYear}.xlsx`);
+        });
     };
 
     return (
@@ -310,6 +338,22 @@ export default function AdminPage({ allRatings }) {
                                     </div>
                                     <button onClick={() => setSelectedYear(y => y + 1)} style={{ background: 'transparent', border: 'none', padding: '0.25rem', cursor: 'pointer', display: 'flex', outline: 'none' }}><ChevronRight size={16} color="var(--text-muted)" /></button>
                                 </div>
+
+                                {/* Export Button */}
+                                <button
+                                    onClick={handleExportExcel}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                        padding: '0.75rem 1.25rem', borderRadius: '50px',
+                                        border: 'none', background: '#10b981', color: 'white',
+                                        fontWeight: '600', cursor: 'pointer', outline: 'none',
+                                        transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.background = '#059669'}
+                                    onMouseOut={e => e.currentTarget.style.background = '#10b981'}
+                                >
+                                    <Download size={18} /> Export
+                                </button>
                             </div>
                         </div>
 
