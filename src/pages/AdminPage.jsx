@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Users, Star, Database, MessageSquare, LayoutGrid, BookOpen, UserCircle, ChevronLeft, ChevronRight, Calendar, Search, FileText, Download, UserPlus, CheckCircle2, Circle } from 'lucide-react';
 
-export default function AdminPage({ allRatings, classesData = [], onUpdateTeacherClasses }) {
+export default function AdminPage({ allRatings, classesData = [], onUpdateTeacherClasses, activeTab }) {
     const navigate = useNavigate();
     const { classId } = useParams();
-    const activeView = classId || 'overview'; // 'overview' is default
+    const activeView = activeTab || classId || 'overview'; // 'overview' is default
 
     // Totals Page States
     const [selectedMonth, setSelectedMonth] = useState('Fevral');
@@ -15,6 +15,7 @@ export default function AdminPage({ allRatings, classesData = [], onUpdateTeache
     const [selectedYear, setSelectedYear] = useState(2026);
     const [newTeacherName, setNewTeacherName] = useState('');
     const [unassignedTeachers, setUnassignedTeachers] = useState([]);
+    const [expandedTeacher, setExpandedTeacher] = useState(null);
     const monthDropdownRef = useRef(null);
     const months = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'];
 
@@ -312,42 +313,51 @@ export default function AdminPage({ allRatings, classesData = [], onUpdateTeache
                         {/* Teachers Grid */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
                             {allTeachers.map((teacher, idx) => (
-                                <div key={idx} style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
-                                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <UserCircle size={24} />
+                                <div key={idx} style={{ background: 'white', borderRadius: '16px', border: expandedTeacher === teacher ? '1px solid var(--primary)' : '1px solid #e2e8f0', boxShadow: expandedTeacher === teacher ? '0 10px 15px -3px rgba(124, 77, 255, 0.1)' : '0 4px 6px -1px rgb(0 0 0 / 0.05)', transition: 'all 0.2s', overflow: 'hidden' }}>
+                                    <div 
+                                        onClick={() => setExpandedTeacher(expandedTeacher === teacher ? null : teacher)}
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem', cursor: 'pointer', background: expandedTeacher === teacher ? '#f8fafc' : 'white' }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <UserCircle size={24} />
+                                            </div>
+                                            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>{teacher}</h3>
                                         </div>
-                                        <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>{teacher}</h3>
+                                        <ChevronRight size={20} color="var(--text-muted)" style={{ transform: expandedTeacher === teacher ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                                     </div>
                                     
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600', letterSpacing: '0.05em' }}>SINFLAR</p>
-                                        {classesData.map(c => {
-                                            const isAssigned = c.teachers.includes(teacher);
-                                            return (
-                                                <div 
-                                                    key={c.id} 
-                                                    onClick={() => {
-                                                        const baseClassIds = classesData.filter(cd => cd.teachers.includes(teacher)).map(cd => cd.id);
-                                                        const newClassIds = isAssigned 
-                                                            ? baseClassIds.filter(id => id !== c.id) 
-                                                            : [...baseClassIds, c.id];
-                                                        onUpdateTeacherClasses(teacher, newClassIds);
-                                                    }}
-                                                    style={{ 
-                                                        display: 'flex', alignItems: 'center', gap: '0.75rem', 
-                                                        padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer',
-                                                        background: isAssigned ? 'var(--primary-light)' : '#f8fafc',
-                                                        border: isAssigned ? '1px solid var(--primary)' : '1px solid #e2e8f0',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                >
-                                                    {isAssigned ? <CheckCircle2 size={18} color="var(--primary)" /> : <Circle size={18} color="#cbd5e1" />}
-                                                    <span style={{ fontWeight: isAssigned ? '600' : '500', color: isAssigned ? 'var(--primary)' : '#475569', fontSize: '0.95rem' }}>{c.name}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
+                                    {expandedTeacher === teacher && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0 1.5rem 1.5rem 1.5rem', borderTop: '1px solid #f1f5f9', paddingTop: '1rem', animation: 'fadeIn 0.2s ease-out' }}>
+                                            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600', letterSpacing: '0.05em' }}>SINFLAR (Yoqish/O'chirish)</p>
+                                            {classesData.map(c => {
+                                                const isAssigned = c.teachers.includes(teacher);
+                                                return (
+                                                    <div 
+                                                        key={c.id} 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const baseClassIds = classesData.filter(cd => cd.teachers.includes(teacher)).map(cd => cd.id);
+                                                            const newClassIds = isAssigned 
+                                                                ? baseClassIds.filter(id => id !== c.id) 
+                                                                : [...baseClassIds, c.id];
+                                                            onUpdateTeacherClasses(teacher, newClassIds);
+                                                        }}
+                                                        style={{ 
+                                                            display: 'flex', alignItems: 'center', gap: '0.75rem', 
+                                                            padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer',
+                                                            background: isAssigned ? 'var(--primary-light)' : '#f8fafc',
+                                                            border: isAssigned ? '1px solid var(--primary)' : '1px solid #e2e8f0',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        {isAssigned ? <CheckCircle2 size={18} color="var(--primary)" /> : <Circle size={18} color="#cbd5e1" />}
+                                                        <span style={{ fontWeight: isAssigned ? '600' : '500', color: isAssigned ? 'var(--primary)' : '#475569', fontSize: '0.95rem' }}>{c.name}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

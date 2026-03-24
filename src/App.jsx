@@ -187,7 +187,7 @@ function App() {
         />
         <Route
           path="/admin/teachers"
-          element={<AdminPage allRatings={allRatings} classesData={classesData} onUpdateTeacherClasses={handleUpdateTeacherClasses} />}
+          element={<AdminPage activeTab="teachers" allRatings={allRatings} classesData={classesData} onUpdateTeacherClasses={handleUpdateTeacherClasses} />}
         />
         <Route
           path="/admin/class/:classId"
