@@ -74,9 +74,9 @@ export default function AdminPage({ allRatings }) {
 
             return {
                 name: teacher,
-                monthlyAverage: monthlyVotes > 0 ? (monthlyScore / monthlyVotes).toFixed(1) : '-',
+                monthlyAverage: monthlyVotes > 0 ? ((monthlyScore / monthlyVotes) * 2).toFixed(1) : '-',
                 votes: monthlyVotes,
-                yearlyTotal: yearlyScore > 0 ? yearlyScore.toFixed(1) : '-'
+                yearlyTotal: yearlyVotes > 0 ? ((yearlyScore / yearlyVotes) * 2).toFixed(1) : '-'
             };
         });
 
@@ -107,7 +107,7 @@ export default function AdminPage({ allRatings }) {
 
             return {
                 name: teacher,
-                average: votes > 0 ? (totalScore / votes).toFixed(1) : '-',
+                average: votes > 0 ? ((totalScore / votes) * 2).toFixed(1) : '-',
                 votes: votes
             };
         });
